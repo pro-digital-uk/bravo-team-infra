@@ -6,7 +6,7 @@ on:
   push:
     branches: [main]
   # Manual trigger: Actions > Terraform > Run workflow (on main).
-  # Leave "apply" unticked to only plan; tick it to plan and then apply.
+  # Useful to re-plan, or to apply again after a rejected run (tick "apply").
   workflow_dispatch:
     inputs:
       apply:
@@ -93,12 +93,12 @@ jobs:
   apply:
     name: Apply
     needs: plan
-    # Applies only run when started by hand from main with "apply" ticked -
-    # never automatically on push or pull request.
+    # Runs after every merge to main (or a manual run with "apply" ticked),
+    # then waits for a required reviewer to approve the "dev" environment.
     if: >-
-      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
-      inputs.apply
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && inputs.apply))
     runs-on: ubuntu-latest
     environment: dev
     steps:
