@@ -39,6 +39,15 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
           terraform_wrapper: false
 
+      - name: Check AWS role secret is set
+        env:
+          ROLE_ARN: ${{ secrets.AWS_PLAN_ROLE_ARN }}
+        run: |
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error title=Missing secret::AWS_PLAN_ROLE_ARN secret is not set. Add it under Settings > Secrets and variables > Actions > Repository secrets."
+            exit 1
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -90,6 +99,15 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
           terraform_wrapper: false
+
+      - name: Check AWS role secret is set
+        env:
+          ROLE_ARN: ${{ secrets.AWS_APPLY_ROLE_ARN }}
+        run: |
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error title=Missing secret::AWS_APPLY_ROLE_ARN secret is not set. Add it under Settings > Secrets and variables > Actions > Repository secrets."
+            exit 1
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
