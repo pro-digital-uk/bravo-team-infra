@@ -5,7 +5,14 @@ on:
     branches: [main]
   push:
     branches: [main]
+  # Manual trigger: Actions > Terraform > Run workflow (on main).
+  # Leave "apply" unticked to only plan; tick it to plan and then apply.
   workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply the plan after it runs"
+        type: boolean
+        default: false
 
 permissions:
   id-token: write # needed for AWS OIDC login
@@ -86,9 +93,13 @@ jobs:
   apply:
     name: Apply
     needs: plan
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Applies only run when started by hand from main with "apply" ticked -
+    # never automatically on push or pull request.
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      inputs.apply
     runs-on: ubuntu-latest
-    # Add required reviewers to this environment in GitHub to gate applies
     environment: dev
     steps:
       - name: Checkout
