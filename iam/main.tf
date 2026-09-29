@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
-  repo_sub   = "repo:${var.github_repo}"
+  repo_sub   = var.github_sub_prefix
 
   managed_role_arns = [
     for p in var.managed_name_prefixes : "arn:aws:iam::${local.account_id}:role/${p}*"

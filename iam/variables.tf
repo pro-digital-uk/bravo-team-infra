@@ -10,6 +10,16 @@ variable "github_repo" {
   default     = "pro-digital-uk/bravo-team-infra"
 }
 
+variable "github_sub_prefix" {
+  description = <<-EOT
+    Prefix of the OIDC token's "sub" claim for the repo. This repo uses GitHub's
+    immutable subject format (owner@owner_id/repo@repo_id). Check it with:
+    gh api repos/<owner>/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix
+  EOT
+  type        = string
+  default     = "repo:pro-digital-uk@328376077/bravo-team-infra@1368417950"
+}
+
 variable "github_environment" {
   description = "GitHub environment the apply job runs in"
   type        = string
