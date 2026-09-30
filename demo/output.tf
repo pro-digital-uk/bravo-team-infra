@@ -17,8 +17,8 @@ output "private_subnet_ids" {
 }
 
 output "nat_gateway_id" {
-  description = "ID of the NAT gateway"
-  value       = aws_nat_gateway.main.id
+  description = "ID of the NAT gateway (null when enable_nat_gateway is false)"
+  value       = one(aws_nat_gateway.main[*].id)
 }
 
 output "web_public_instance_id" {
