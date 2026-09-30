@@ -6,13 +6,21 @@ on:
   push:
     branches: [main]
   # Manual trigger: Actions > Terraform > Run workflow (on main).
-  # Useful to re-plan, or to apply again after a rejected run (tick "apply").
+  #   plan    - plan only
+  #   apply   - plan, then apply after approval (e.g. to retry a rejected run)
+  #   destroy - destroy plan, then destroy after approval; needs confirm=destroy
   workflow_dispatch:
     inputs:
-      apply:
-        description: "Apply the plan after it runs"
-        type: boolean
-        default: false
+      action:
+        description: "What to do"
+        type: choice
+        options: [plan, apply, destroy]
+        default: plan
+      confirm:
+        description: 'Type "destroy" to confirm a destroy'
+        type: string
+        required: false
+        default: ""
 
 permissions:
   id-token: write # needed for AWS OIDC login
@@ -27,6 +35,8 @@ env:
   TF_VERSION: 1.5.7
   AWS_REGION: eu-west-2
   TF_IN_AUTOMATION: "true"
+  # Empty on push / pull_request, so those always do a normal plan
+  TF_ACTION: ${{ inputs.action }}
 
 defaults:
   run:
@@ -37,6 +47,17 @@ jobs:
     name: Plan
     runs-on: ubuntu-latest
     steps:
+      - name: Confirm destroy
+        if: inputs.action == 'destroy'
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          if [ "$CONFIRM" != "destroy" ]; then
+            echo "::error title=Destroy not confirmed::To destroy, set the confirm input to exactly: destroy"
+            exit 1
+          fi
+          echo "::warning title=Destroy requested::This run will plan the DESTRUCTION of every resource in the stack."
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -71,13 +92,22 @@ jobs:
         run: terraform validate -no-color
 
       - name: Terraform plan
-        run: terraform plan -input=false -no-color -out=tfplan | tee plan.txt
+        run: |
+          if [ "$TF_ACTION" = "destroy" ]; then
+            terraform plan -destroy -input=false -no-color -out=tfplan | tee plan.txt
+          else
+            terraform plan -input=false -no-color -out=tfplan | tee plan.txt
+          fi
 
       - name: Add plan to job summary
         if: always()
         run: |
           {
-            echo "### Terraform plan"
+            if [ "$TF_ACTION" = "destroy" ]; then
+              echo "### :warning: Terraform DESTROY plan"
+            else
+              echo "### Terraform plan"
+            fi
             echo '```'
             tail -c 60000 plan.txt 2>/dev/null || echo "No plan output"
             echo '```'
@@ -93,12 +123,14 @@ jobs:
   apply:
     name: Apply
     needs: plan
-    # Runs after every merge to main (or a manual run with "apply" ticked),
+    # Runs after every merge to main, or a manual run with action apply/destroy,
     # then waits for a required reviewer to approve the "dev" environment.
+    # A destroy run applies the saved destroy plan, so it deletes everything.
     if: >-
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' ||
-       (github.event_name == 'workflow_dispatch' && inputs.apply))
+       (github.event_name == 'workflow_dispatch' &&
+        (inputs.action == 'apply' || inputs.action == 'destroy')))
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -134,5 +166,5 @@ jobs:
       - name: Terraform init
         run: terraform init -input=false
 
-      - name: Terraform apply
+      - name: Terraform apply (${{ inputs.action == 'destroy' && 'destroy' || 'apply' }})
         run: terraform apply -input=false -no-color tfplan
