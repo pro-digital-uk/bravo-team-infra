@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Terraform & required providers
+# Terraform & provider
 # -----------------------------------------------------------------------------
 terraform {
   required_version = ">= 1.5.0"
@@ -12,17 +12,14 @@ terraform {
   }
 }
 
-# -----------------------------------------------------------------------------
-# Provider
-# -----------------------------------------------------------------------------
 provider "aws" {
-  region = "eu-west-2"
+  region = var.aws_region
 
   default_tags {
     tags = {
       Project     = "mupando"
       Team        = "alpha"
-      Environment = "dev"
+      Environment = var.environment
       ManagedBy   = "terraform"
     }
   }

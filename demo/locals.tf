@@ -2,15 +2,16 @@
 # Locals
 # -----------------------------------------------------------------------------
 locals {
-  project_name = "mupando"
-  team_name    = "alpha"
-  name_prefix  = "team-${local.team_name}-${local.project_name}"
-  bucket_name  = "${local.name_prefix}-${var.environment}-bucket" # team-alpha-mupando-dev
-
-  common_tags = {
-    Project     = local.project_name
-    Team        = local.team_name
-    Environment = var.environment
-    ManagedBy   = "terraform"
+  # AZ suffix => CIDR block
+  public_subnets = {
+    "2a" = "10.0.0.0/20"
+    "2b" = "10.0.16.0/20"
   }
+
+  private_subnets = {
+    "2a" = "10.0.32.0/20"
+    "2b" = "10.0.48.0/20"
+  }
+
+  instance_type = "t3.micro"
 }
