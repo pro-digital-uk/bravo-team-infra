@@ -35,12 +35,15 @@ env:
   TF_VERSION: 1.5.7
   AWS_REGION: eu-west-2
   TF_IN_AUTOMATION: "true"
+  # Folder holding the Terraform stack this workflow plans and applies
+  TF_DIR: demo
   # Empty on push / pull_request, so those always do a normal plan
   TF_ACTION: ${{ inputs.action }}
 
 defaults:
   run:
     shell: bash # runs with -eo pipefail, so a failed plan isn't hidden by tee
+    working-directory: demo # keep in sync with TF_DIR
 
 jobs:
   plan:
@@ -83,6 +86,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform fmt
+        working-directory: .
         run: terraform fmt -check -recursive
 
       - name: Terraform init
@@ -117,7 +121,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: tfplan
+          path: ${{ env.TF_DIR }}/tfplan
           retention-days: 5
 
   apply:
@@ -162,6 +166,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: tfplan
+          path: ${{ env.TF_DIR }}
 
       - name: Terraform init
         run: terraform init -input=false
