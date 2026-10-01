@@ -1,12 +1,12 @@
 # -----------------------------------------------------------------------------
 # S3
 # -----------------------------------------------------------------------------
-/*
+
 resource "aws_s3_bucket" "main" {
-  bucket = "team-alpha-mupando-dev"
+  bucket = "${var.team_name}-mupando-dev-bucket"
 
   tags = {
-    Name = "team-alpha-mupando-dev"
+    Name = "${var.team_name}-mupando-dev-bucket"
   }
 }
 
@@ -25,4 +25,3 @@ resource "aws_s3_bucket_public_access_block" "main" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
-*/

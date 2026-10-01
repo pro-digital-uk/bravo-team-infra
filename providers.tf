@@ -18,7 +18,7 @@ provider "aws" {
   default_tags {
     tags = {
       Project     = "mupando"
-      Team        = "alpha"
+      Team        = var.team_name
       Environment = var.environment
       ManagedBy   = "terraform"
     }
