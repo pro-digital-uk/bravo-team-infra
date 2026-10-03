@@ -10,6 +10,9 @@ locals {
   managed_instance_profile_arns = [
     for p in var.managed_name_prefixes : "arn:aws:iam::${local.account_id}:instance-profile/${p}*"
   ]
+  managed_bucket_arns = flatten([
+    for p in var.managed_name_prefixes : ["arn:aws:s3:::${p}*", "arn:aws:s3:::${p}*/*"]
+  ])
 }
 
 # -----------------------------------------------------------------------------
@@ -136,6 +139,14 @@ data "aws_iam_policy_document" "apply" {
       "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:/vpc/*",
       "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:/vpc/*:*",
     ]
+  }
+
+  # Static website bucket - the bucket, its settings and its objects.
+  # Scoped by name prefix, which excludes the Terraform state bucket.
+  statement {
+    sid       = "ManageStackBuckets"
+    actions   = ["s3:*"]
+    resources = local.managed_bucket_arns
   }
 
   statement {
