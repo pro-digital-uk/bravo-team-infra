@@ -40,3 +40,10 @@ variable "security_group_outbound_cidr_blocks" {
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
+
+variable "project_name" {
+  description = "Name of the project, used in tags"
+  type        = string
+  default     = "static-website"
+}
+
