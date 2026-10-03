@@ -2,12 +2,12 @@
 # VPC - network, NAT, default SG lockdown, flow logs
 # -----------------------------------------------------------------------------
 resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = var.vpc_cidr_block
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "team-alpha-vpc"
+    Name = "${var.team_name}-vpc"
   }
 }
 
@@ -15,7 +15,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "team-alpha-igw"
+    Name = "${var.team_name}-igw"
   }
 }
 
@@ -23,12 +23,12 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block = var.security_group_outbound_cidr_blocks[0]
     gateway_id = aws_internet_gateway.main.id
   }
 
   tags = {
-    Name = "team-alpha-public-rt"
+    Name = "${var.team_name}-public-rt"
   }
 }
 
@@ -36,7 +36,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "team-alpha-private-rt"
+    Name = "${var.team_name}-private-rt"
   }
 }
 
@@ -44,12 +44,12 @@ resource "aws_subnet" "public" {
   for_each = local.public_subnets
 
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = each.value
-  availability_zone       = "eu-west-${each.key}"
+  cidr_block              = local.public_subnets[each.key]
+  availability_zone       = "${var.aws_region}${substr(each.key, -1, 1)}"
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "team-alpha-public-subnet-${each.key}"
+    Name = "${var.team_name}-public-subnet-${each.key}"
   }
 }
 
@@ -57,12 +57,12 @@ resource "aws_subnet" "private" {
   for_each = local.private_subnets
 
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = each.value
-  availability_zone       = "eu-west-${each.key}"
+  cidr_block              = local.private_subnets[each.key]
+  availability_zone       = "${var.aws_region}${substr(each.key, -1, 1)}"
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "team-alpha-private-subnet-${each.key}"
+    Name = "${var.team_name}-private-subnet-${each.key}"
   }
 }
 
@@ -86,7 +86,7 @@ resource "aws_route" "private_nat" {
   count = var.enable_nat_gateway ? 1 : 0
 
   route_table_id         = aws_route_table.private.id
-  destination_cidr_block = "0.0.0.0/0"
+  destination_cidr_block = var.security_group_outbound_cidr_blocks[0]
   nat_gateway_id         = aws_nat_gateway.main[0].id
 }
 
@@ -97,7 +97,7 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public["2a"].id
 
   tags = {
-    Name = "team-alpha-nat-gateway"
+    Name = "${var.team_name}-nat-gateway"
   }
 }
 
@@ -106,7 +106,7 @@ resource "aws_eip" "nat" {
 
   domain = "vpc"
   tags = {
-    Name = "team-alpha-nat-eip"
+    Name = "${var.team_name}-nat-eip"
   }
   depends_on = [aws_internet_gateway.main]
 }
@@ -117,12 +117,12 @@ resource "aws_default_security_group" "default" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "team-alpha-default-sg-locked"
+    Name = "${var.team_name}-default-sg-locked"
   }
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
-  name              = "/vpc/team-alpha-vpc/flow-logs"
+  name              = "/vpc/${var.team_name}-vpc/flow-logs"
   retention_in_days = 30
 }
 
@@ -138,7 +138,7 @@ data "aws_iam_policy_document" "vpc_flow_logs_assume" {
 }
 
 resource "aws_iam_role" "vpc_flow_logs" {
-  name               = "team-alpha-vpc-flow-logs"
+  name               = "${var.team_name}-vpc-flow-logs"
   assume_role_policy = data.aws_iam_policy_document.vpc_flow_logs_assume.json
 }
 
@@ -167,6 +167,6 @@ resource "aws_flow_log" "main" {
   iam_role_arn         = aws_iam_role.vpc_flow_logs.arn
 
   tags = {
-    Name = "team-alpha-vpc-flow-log"
+    Name = "${var.team_name}-vpc-flow-log"
   }
 }
