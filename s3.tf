@@ -2,8 +2,12 @@
 # S3
 # -----------------------------------------------------------------------------
 
+resource "random_id" "bucket_id" {
+  byte_length = 4
+}
+
 resource "aws_s3_bucket" "main" {
-  bucket = "${var.team_name}-${local.bucket_name}-${var.project_name}"
+  bucket = "${var.team_name}-${local.bucket_name}-${var.project_name}-${random_id.bucket_id.hex}"
 
   tags = {
     Name = "${var.team_name}-${local.bucket_name}-${var.project_name}"
