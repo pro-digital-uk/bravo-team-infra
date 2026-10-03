@@ -36,7 +36,7 @@ env:
   AWS_REGION: eu-west-2
   TF_IN_AUTOMATION: "true"
   # Folder holding the Terraform stack this workflow plans and applies
-  TF_DIR: demo
+  # TF_DIR: demo
   # Empty on push / pull_request, so those always do a normal plan
   TF_ACTION: ${{ inputs.action }}
 
