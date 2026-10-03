@@ -43,7 +43,7 @@ env:
 defaults:
   run:
     shell: bash # runs with -eo pipefail, so a failed plan isn't hidden by tee
-    working-directory: demo # keep in sync with TF_DIR
+    working-directory: / # keep in sync with TF_DIR
 
 jobs:
   plan:
