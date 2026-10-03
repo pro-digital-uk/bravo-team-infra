@@ -22,6 +22,7 @@ resource "aws_instance" "web_2a_public" {
   subnet_id                   = aws_subnet.public["2a"].id
   vpc_security_group_ids      = [aws_security_group.public_web.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_ssm.name
+  key_name                   = aws_key_pair.deployer.key_name
 
   # Require IMDSv2 (session tokens) for the instance metadata service
   metadata_options {
@@ -50,6 +51,7 @@ resource "aws_instance" "web_2a_private" {
   subnet_id              = aws_subnet.private["2a"].id
   vpc_security_group_ids = [aws_security_group.private_web.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_ssm.name
+  key_name              = aws_key_pair.deployer.key_name
 
   # Require IMDSv2 (session tokens) for the instance metadata service
   metadata_options {
