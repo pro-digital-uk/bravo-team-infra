@@ -1,0 +1,9 @@
+team_name = "bravo"
+vpc_cidr_block = "10.1.0.0/16"
+environment = "dev"
+aws_region = "eu-west-2"
+project_name = "static-website"
+bucket_name = "supando"
+instance_type = "t2.micro"
+
+
