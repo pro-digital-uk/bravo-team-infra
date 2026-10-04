@@ -39,7 +39,7 @@ variable "state_key_prefix" {
 }
 
 variable "managed_name_prefixes" {
-  description = "Name prefixes of IAM roles/instance profiles the main stack creates"
+  description = "Name prefixes of IAM roles, instance profiles and S3 buckets the team stacks create"
   type        = list(string)
-  default     = ["team-alpha-", "team-bravo-"]
+  default     = ["alpha-", "bravo-"]
 }
