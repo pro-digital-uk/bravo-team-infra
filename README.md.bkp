@@ -1,1 +1,0 @@
-# bravo-team-infra
