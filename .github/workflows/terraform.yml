@@ -61,6 +61,8 @@ jobs:
         team: ${{ fromJSON(inputs.team == 'team-alpha' && '["team-alpha"]' || inputs.team == 'team-bravo' && '["team-bravo"]' || '["team-alpha","team-bravo"]') }}
     defaults:
       run:
+        # Job-level defaults replace the workflow-level ones, so repeat the shell
+        shell: bash
         working-directory: ${{ matrix.team }}
     steps:
       - name: Confirm destroy
@@ -158,6 +160,8 @@ jobs:
         team: ${{ fromJSON(inputs.team == 'team-alpha' && '["team-alpha"]' || inputs.team == 'team-bravo' && '["team-bravo"]' || '["team-alpha","team-bravo"]') }}
     defaults:
       run:
+        # Job-level defaults replace the workflow-level ones, so repeat the shell
+        shell: bash
         working-directory: ${{ matrix.team }}
     steps:
       - name: Checkout
