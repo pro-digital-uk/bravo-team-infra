@@ -23,16 +23,28 @@ variable "enable_nat_gateway" {
   default     = false
 }
 
-variable "team_name" {
-  description = "Name of the team, used in tags"
+variable "alpha_team_name" {
+  description = "Name of the alpha team, used in tags"
   type        = string
   default     = "team-alpha"
 }
 
-variable "vpc_cidr_block" {
+variable "bravo_team_name" {
+  description = "Name of the bravo team, used in tags"
+  type        = string
+  default     = "team-bravo"
+}
+
+variable "alpha_vpc_cidr_block" {
   description = "CIDR block for the VPC"
   type        = string
   default     = "10.0.0.0/16"
+}
+
+variable "bravo_vpc_cidr_block" {
+  description = "CIDR block for the bravo VPC"
+  type        = string
+  default     = "10.1.0.0/16"
 }
 
 variable "security_group_outbound_cidr_blocks" {
