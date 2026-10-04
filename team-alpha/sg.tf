@@ -1,5 +1,5 @@
 
-resource "aws_security_group" "public_web" {
+resource "aws_security_group" "public" {
   name        = "${var.team_name}-web-sg"
   description = "Allow HTTP inbound and all outbound"
   vpc_id      = aws_vpc.main.id
@@ -20,12 +20,12 @@ resource "aws_security_group" "public_web" {
   }
 
   tags = {
-    Name = "${var.team_name}-public-web-sg"
+    Name = "${var.team_name}-${var.project_name}-public-sg"
   }
 }
 
-resource "aws_security_group" "private_web" {
-  name        = "${var.team_name}-private-web-sg"
+resource "aws_security_group" "private" {
+  name        = "${var.team_name}-${var.project_name}-private-sg"
   description = "Allow HTTP from the public web SG only, and all outbound"
   vpc_id      = aws_vpc.main.id
 
@@ -34,7 +34,7 @@ resource "aws_security_group" "private_web" {
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [aws_security_group.public_web.id]
+    security_groups = [aws_security_group.public.id]
   }
 
   egress {
@@ -45,6 +45,6 @@ resource "aws_security_group" "private_web" {
   }
 
   tags = {
-    Name = "${var.team_name}-private-web-sg"
+    Name = "${var.team_name}-${var.project_name}-private-sg"
   }
 }

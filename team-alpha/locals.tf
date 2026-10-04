@@ -12,7 +12,5 @@ locals {
     "2a" = "10.0.32.0/20"
     "2b" = "10.0.48.0/20"
   }
-
-  instance_type = "t3.micro"
-  bucket_name   = "mupando"
 }
+

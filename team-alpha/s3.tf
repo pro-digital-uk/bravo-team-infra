@@ -3,10 +3,10 @@
 # -----------------------------------------------------------------------------
 
 resource "aws_s3_bucket" "main" {
-  bucket = "${var.team_name}-${local.bucket_name}-${var.project_name}"
+  bucket = "${var.team_name}-${var.bucket_name}-${var.project_name}"
 
   tags = {
-    Name = "${var.team_name}-${local.bucket_name}-${var.project_name}"
+    Name = "${var.team_name}-${var.bucket_name}-${var.project_name}"
   }
 }
 

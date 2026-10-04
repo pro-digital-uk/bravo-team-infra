@@ -16,11 +16,11 @@ data "aws_ami" "amazon_linux" {
 
 resource "aws_instance" "web_2a_public" {
   ami                         = data.aws_ami.amazon_linux.id
-  instance_type               = local.instance_type
+  instance_type               = var.instance_type
   user_data                   = file("${path.module}/user-data.sh")
   user_data_replace_on_change = true
   subnet_id                   = aws_subnet.public["2a"].id
-  vpc_security_group_ids      = [aws_security_group.public_web.id]
+  vpc_security_group_ids      = [aws_security_group.public.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_ssm.name
   key_name                    = aws_key_pair.deployer.key_name
 
@@ -35,7 +35,7 @@ resource "aws_instance" "web_2a_public" {
   }
 
   tags = {
-    Name = "${var.team_name}-public-2a-web"
+    Name = "${var.team_name}-${var.project_name}-public-2a"
   }
 
   # Don't replace running instances every time AWS publishes a new AMI.
@@ -47,9 +47,9 @@ resource "aws_instance" "web_2a_public" {
 
 resource "aws_instance" "web_2a_private" {
   ami                    = data.aws_ami.amazon_linux.id
-  instance_type          = local.instance_type
+  instance_type          = var.instance_type
   subnet_id              = aws_subnet.private["2a"].id
-  vpc_security_group_ids = [aws_security_group.private_web.id]
+  vpc_security_group_ids = [aws_security_group.private.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_ssm.name
   key_name               = aws_key_pair.deployer.key_name
 
@@ -64,7 +64,7 @@ resource "aws_instance" "web_2a_private" {
   }
 
   tags = {
-    Name = "${var.team_name}-private-2a-web"
+    Name = "${var.team_name}-${var.project_name}-private-2a"
   }
 
   # Don't replace running instances every time AWS publishes a new AMI.
