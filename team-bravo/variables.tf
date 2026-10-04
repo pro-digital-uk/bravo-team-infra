@@ -29,7 +29,7 @@ variable "team_name" {
   default     = "bravo"
 }
 
-variable "bravo_vpc_cidr_block" {
+variable "vpc_cidr_block" {
   description = "CIDR block for the bravo VPC"
   type        = string
   default     = "10.1.0.0/16"
@@ -47,3 +47,14 @@ variable "project_name" {
   default     = "static-website"
 }
 
+variable "bucket_name" {
+  description = "Name of the S3 bucket to create"
+  type        = string
+  default     = "supando"
+}
+
+variable "instance_type" {
+  description = "EC2 instance type for the private instance"
+  type        = string
+  default     = "t2.micro"
+}
