@@ -67,9 +67,12 @@ jobs:
     steps:
       - name: Confirm destroy
         if: inputs.action == 'destroy'
+        # Runs before checkout, so the team folder doesn't exist yet
+        working-directory: .
         env:
           CONFIRM: ${{ inputs.confirm }}
         run: |
+          CONFIRM="$(echo "$CONFIRM" | xargs)" # ignore surrounding spaces
           if [ "$CONFIRM" != "destroy" ]; then
             echo "::error title=Destroy not confirmed::To destroy, set the confirm input to exactly: destroy"
             exit 1
@@ -122,6 +125,8 @@ jobs:
 
       - name: Add plan to job summary
         if: always()
+        # Also runs when an earlier step failed, possibly before checkout
+        working-directory: .
         run: |
           {
             if [ "$TF_ACTION" = "destroy" ]; then
@@ -130,7 +135,7 @@ jobs:
               echo "### Terraform plan - ${{ matrix.team }}"
             fi
             echo '```'
-            tail -c 60000 plan.txt 2>/dev/null || echo "No plan output"
+            tail -c 60000 "${{ matrix.team }}/plan.txt" 2>/dev/null || echo "No plan output"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
