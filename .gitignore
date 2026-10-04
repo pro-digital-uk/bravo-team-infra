@@ -13,6 +13,8 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 
+.terraform.lock.hcl
+
 # Saved plan files
 *.tfplan
 tfplan

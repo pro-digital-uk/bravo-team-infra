@@ -1,0 +1,9 @@
+team_name = "value"
+vpc_cidr_block = "value"
+environment = "value"
+aws_region = "value"
+project_name = "value"
+bucket_name = "value"
+instance_type = "value"
+
+
