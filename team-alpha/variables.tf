@@ -4,13 +4,11 @@
 variable "aws_region" {
   description = "AWS region to deploy into"
   type        = string
-  default     = "eu-west-2"
 }
 
 variable "environment" {
   description = "Deployment environment, used in tags"
   type        = string
-  default     = "dev"
 }
 
 variable "enable_nat_gateway" {
@@ -26,13 +24,11 @@ variable "enable_nat_gateway" {
 variable "team_name" {
   description = "Name of the bravo team, used in tags"
   type        = string
-  default     = "bravo"
 }
 
-variable "bravo_vpc_cidr_block" {
-  description = "CIDR block for the bravo VPC"
+variable "vpc_cidr_block" {
+  description = "CIDR block for the VPC"
   type        = string
-  default     = "10.1.0.0/16"
 }
 
 variable "security_group_outbound_cidr_blocks" {
@@ -44,6 +40,15 @@ variable "security_group_outbound_cidr_blocks" {
 variable "project_name" {
   description = "Name of the project, used in tags"
   type        = string
-  default     = "static-website"
+}
+
+variable "bucket_name" {
+  description = "Name of the S3 bucket to create"
+  type        = string
+}
+
+variable "instance_type" {
+  description = "EC2 instance type for the private instance"
+  type        = string
 }
 
