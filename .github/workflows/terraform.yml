@@ -50,6 +50,97 @@ defaults:
     shell: bash # runs with -eo pipefail, so a failed plan isn't hidden by tee
 
 jobs:
+  # Static checks: run on the code alone, no AWS credentials. They run alongside
+  # the plan and don't gate apply. Skipped for destroy runs.
+  # This is a demo repo, so findings are reported only and never fail CI.
+  # continue-on-error also keeps a tool install failure from failing the run.
+  tflint:
+    name: TFLint
+    if: inputs.action != 'destroy'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache TFLint plugins
+        uses: actions/cache@v4
+        with:
+          path: ~/.tflint.d/plugins
+          key: tflint-${{ hashFiles('.tflint.hcl') }}
+
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.64.0
+
+      - name: TFLint init
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # avoids GitHub API rate limits on plugin download
+        run: tflint --init --config "$GITHUB_WORKSPACE/.tflint.hcl"
+
+      - name: TFLint
+        # --recursive lints every stack folder (team-*, oidc-iam).
+        # --force reports issues but always exits 0.
+        run: >-
+          tflint --recursive
+          --config "$GITHUB_WORKSPACE/.tflint.hcl"
+          --format compact
+          --force
+
+  tfsec:
+    name: tfsec
+    if: inputs.action != 'destroy'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      TFSEC_VERSION: v1.28.14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tfsec
+        run: |
+          curl -sSfL -o /usr/local/bin/tfsec \
+            "https://github.com/aquasecurity/tfsec/releases/download/${TFSEC_VERSION}/tfsec-linux-amd64"
+          chmod +x /usr/local/bin/tfsec
+
+      - name: tfsec
+        # --soft-fail reports findings without failing the job
+        run: tfsec . --soft-fail --no-color
+
+      - name: Add tfsec results to job summary
+        if: always()
+        run: tfsec . --soft-fail --no-color --format markdown >> "$GITHUB_STEP_SUMMARY"
+
+  checkov:
+    name: Checkov
+    if: inputs.action != 'destroy'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Checkov
+        run: pip install --quiet checkov==3.3.26
+
+      - name: Checkov
+        # Settings (including soft-fail) live in .checkov.yaml
+        run: >-
+          checkov --config-file .checkov.yaml
+          -o cli -o github_failed_only
+          --output-file-path console,checkov-report.md
+
+      - name: Add Checkov results to job summary
+        if: always()
+        run: cat checkov-report.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "No Checkov report" >> "$GITHUB_STEP_SUMMARY"
+
   plan:
     name: Plan (${{ matrix.team }})
     runs-on: ubuntu-latest

@@ -74,6 +74,26 @@ The workflow runs once for each team folder.
 
 Only one run can be active at a time. A run waiting for `dev` approval blocks later runs, and GitHub cancels them while they queue. Approve or cancel old waiting runs.
 
+### Static checks
+
+Every run except a destroy also runs three jobs over the whole repo. They need no AWS credentials, run alongside the plan, and do not block apply. This is a demo repo, so findings are warnings only: none of these jobs fail CI.
+
+| Job | Config | Report-only setting |
+|---|---|---|
+| TFLint (core + AWS ruleset) | `.tflint.hcl` | `--force` in the workflow |
+| tfsec | flags in the workflow | `--soft-fail` in the workflow |
+| Checkov | `.checkov.yaml` | `soft-fail: true` |
+
+The jobs also set `continue-on-error`, so even a failed tool install doesn't fail the run. TFLint results are in the job log; tfsec and Checkov results also appear in the job summary. Many findings are intentional for the demo (public website bucket, port 80 open to the internet, wildcards in the CI apply role). To hide one, add a comment to the resource, such as `# checkov:skip=CKV_AWS_260:<reason>` or `# tfsec:ignore:aws-ec2-no-public-ingress-sgr`.
+
+Run them locally from the repo root:
+
+```bash
+tflint --init --config "$PWD/.tflint.hcl" && tflint --recursive --config "$PWD/.tflint.hcl"
+tfsec .
+checkov --config-file .checkov.yaml
+```
+
 ## First-time setup / changing CI permissions
 
 `oidc-iam` creates the roles GitHub Actions assumes:
