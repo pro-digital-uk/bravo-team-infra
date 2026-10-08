@@ -1,0 +1,12 @@
+# Checkov config, used locally and in CI. Run from the repo root:
+#   checkov --config-file .checkov.yaml
+directory:
+  - .
+framework:
+  - terraform
+compact: true
+quiet: true # only print failed checks
+# Demo repo: report findings without ever failing the build. To hide a
+# finding, add a comment on the resource, e.g.
+#   # checkov:skip=CKV_AWS_260:Public web server serves HTTP on port 80
+soft-fail: true

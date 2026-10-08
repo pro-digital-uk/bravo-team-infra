@@ -55,6 +55,7 @@ Every resource name starts with `${var.team_name}-` (for example `alpha-vpc`, `a
 - Plans are uploaded as artifacts named `tfplan-<team>` and the apply job applies that saved plan.
 - `concurrency: terraform-dev` with `cancel-in-progress: false`: a run waiting for `dev` approval holds the group, and GitHub cancels newer queued runs. If runs are being cancelled with no jobs, look for an old run in `waiting` status and approve or cancel it.
 - If any matrix plan fails, apply is skipped for all teams.
+- Static-check jobs `tflint`, `tfsec` and `checkov` scan the whole repo (including `oidc-iam`), need no AWS credentials, are skipped on destroy, and are not in apply's `needs`. Demo repo, so they are report-only and never fail CI: `continue-on-error: true` on each job, plus TFLint `--force` (config `.tflint.hcl`, `--recursive`), tfsec `--soft-fail`, and Checkov `soft-fail: true` in `.checkov.yaml`. Tool versions are pinned in the workflow.
 - Secrets `AWS_PLAN_ROLE_ARN` and `AWS_APPLY_ROLE_ARN` come from the `oidc-iam` outputs.
 - Terraform 1.5.7 in CI. `.terraform.lock.hcl` is gitignored (despite the comment at the bottom of `.gitignore`), so CI resolves `hashicorp/aws ~> 5.0` fresh each run.
 
